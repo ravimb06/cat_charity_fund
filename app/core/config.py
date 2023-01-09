@@ -5,6 +5,7 @@ class Settings(BaseSettings):
     app_title: str = 'Благотворительный фонд QRKot'
     app_description: str = 'Фонд поддержки котиков QRKot.'
     database_url: str
+    secret: str = 'SECRET'
 
     class Config:
         env_file = '.env'
