@@ -51,7 +51,6 @@ async def update_charity_project(
 @router.delete('/{project_id}', response_model=CharityProjectDB)
 async def remove_charity_project(
     project_id: int,
-    obj_in: CharityProjectUpdate,
     session: AsyncSession = Depends(get_async_session)
 ):
     project = await check_project_before_edit(
