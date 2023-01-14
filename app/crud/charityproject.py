@@ -22,6 +22,19 @@ class CRUDCharityProject(CRUDBase):
         )
         db_project = db_project.scalars().first()
         return db_project
+    
+    async def get_project_id_by_name(
+        self,
+        project_name: str,
+        session: AsyncSession,
+    ) -> Optional[int]:
+        """Получить ID проекта по названию."""
+        project_id = await session.execute(
+            select(CharityProject.id).where(
+                CharityProject.name == project_name)
+        )
+        project_id = project_id.scalars().first()
+        return project_id
 
 
 charity_project_crud = CRUDCharityProject(CharityProject)
