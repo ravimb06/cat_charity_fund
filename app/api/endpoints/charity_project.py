@@ -18,6 +18,7 @@ router = APIRouter()
 async def get_all_charity_projects(
     session: AsyncSession = Depends(get_async_session)
 ):
+    """Получить список всех проектов. Доступно всем пользователям"""
     all_projects = await charity_project_crud.get_multi(session)
     return all_projects
 
@@ -53,6 +54,10 @@ async def remove_charity_project(
     project_id: int,
     session: AsyncSession = Depends(get_async_session)
 ):
+    """
+    Удалить можно только проект в который не внесены средства.
+    Доступно только Суперюзерам.
+    """
     project = await check_project_before_edit(
         project_id, session
     )
