@@ -7,7 +7,7 @@ from app.models.user import User
 
 
 class CRUDDonation(CRUDBase):
-    
+
     async def get_by_user(
         self,
         user: User,

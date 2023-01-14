@@ -23,9 +23,9 @@ class DonationDB(DonationBase):
     full_amount: PositiveInt = Field(...,)
     invested_amount: Optional[int] = 0
     fully_invested: Optional[bool] = Field(False, example=True)
-    create_date: datetime = datetime.now().isoformat('T', 'seconds')
+    create_date: datetime
     close_date: datetime = Field(
-        None, example=datetime.now().isoformat('T', 'seconds')
+        None, example=(datetime.now()).isoformat('T', 'seconds')
     )
 
     class Config:

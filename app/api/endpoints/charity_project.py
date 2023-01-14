@@ -1,17 +1,18 @@
-from fastapi import APIRouter, Depends
-
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.api.validators import (check_charity_project_active,
+                                check_charity_project_update,
+                                check_charity_project_was_invested,
+                                check_name_duplicate,
+                                check_project_before_edit)
 from app.core.db import get_async_session
 from app.core.user import current_superuser
+from app.crud.charity_project import charity_project_crud
 from app.models import Donation
-from app.crud.charityproject import charity_project_crud
-from app.schemas.charityproject import (CharityProjectCreate, CharityProjectDB,
-                                        CharityProjectUpdate)
-from app.api.validators import (check_project_before_edit, 
-                                check_charity_project_active,
-                                check_name_duplicate,
-                                check_charity_project_update)
+from app.schemas.charity_project import (CharityProjectCreate,
+                                         CharityProjectDB,
+                                         CharityProjectUpdate)
 from app.services.investing import investing_process
 
 router = APIRouter()
@@ -20,6 +21,7 @@ router = APIRouter()
 @router.get(
     '/',
     response_model=list[CharityProjectDB],
+    response_model_exclude_none=True,
 )
 async def get_all_charity_projects(
     session: AsyncSession = Depends(get_async_session)
@@ -32,6 +34,7 @@ async def get_all_charity_projects(
 @router.post(
     '/',
     response_model=CharityProjectDB,
+    response_model_exclude_none=True,
     dependencies=[Depends(current_superuser)]
 )
 async def create_charity_project(
@@ -39,6 +42,14 @@ async def create_charity_project(
     session: AsyncSession = Depends(get_async_session)
 ):
     """Создание проектов доступно только Суперюзерам."""
+    await check_name_duplicate(project.name, session)
+    project_id = await charity_project_crud.get_project_id_by_name(
+        project.name, session)
+    if project_id is not None:
+        raise HTTPException(
+            status_code=422,
+            detail='Проект уже существует!'
+        )
     new_project = await charity_project_crud.create(project, session)
     await investing_process(new_project, Donation, session)
     await session.refresh(new_project)
@@ -78,7 +89,11 @@ async def update_charity_project(
     return project
 
 
-@router.delete('/{project_id}', response_model=CharityProjectDB)
+@router.delete(
+    '/{project_id}',
+    response_model=CharityProjectDB,
+    dependencies=[Depends(current_superuser)],
+)
 async def remove_charity_project(
     project_id: int,
     session: AsyncSession = Depends(get_async_session)
@@ -90,5 +105,6 @@ async def remove_charity_project(
     project = await check_project_before_edit(
         project_id, session
     )
+    check_charity_project_was_invested(project)
     project = await charity_project_crud.remove(project, session)
     return project

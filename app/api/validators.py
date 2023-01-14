@@ -4,8 +4,8 @@ from fastapi import HTTPException
 from pydantic import PositiveInt
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.crud.charityproject import charity_project_crud
-from app.models.charityproject import CharityProject
+from app.crud.charity_project import charity_project_crud
+from app.models.charity_project import CharityProject
 
 
 async def check_project_before_edit(
@@ -66,4 +66,15 @@ async def check_name_duplicate(
         raise HTTPException(
             status_code=HTTPStatus.BAD_REQUEST,
             detail='Проект с таким именем уже существует!',
+        )
+
+
+def check_charity_project_was_invested(
+    charity_project: CharityProject,
+) -> CharityProject:
+    """Проверка на то, что средства уже внесены."""
+    if charity_project.invested_amount > 0:
+        raise HTTPException(
+            status_code=HTTPStatus.BAD_REQUEST,
+            detail='В проект были внесены средства, не подлежит удалению!'
         )

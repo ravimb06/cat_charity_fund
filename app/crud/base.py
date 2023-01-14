@@ -21,16 +21,6 @@ class CRUDBase:
             select(self.model).where(self.model.id == obj_id)
         )
         return db_obj.scalars().first()
-    
-    async def get_most_earlier_object(
-        self,
-        session: AsyncSession
-    ):
-        db_obj = await session.execute(
-            select(self.model).where(
-                self.model.fully_invested == False).order_by(
-                    self.model.create_date))
-        return db_obj.scalars().first()
 
     async def get_multi(
         self,
