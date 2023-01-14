@@ -35,22 +35,10 @@ async def get_my_donations(
     session: AsyncSession = Depends(get_async_session),
     user: User = Depends(current_user)
 ):
+    """Получить список всех своих пожертвований."""
     donations = await donation_crud.get_by_user(
         session=session,
         user=user
-    )
-    return donations
-
-
-@router.get(
-    '/first',
-    response_model=DonationDB,
-)
-async def get_early_donation(
-    session: AsyncSession = Depends(get_async_session),
-):
-    donations = await donation_crud.get_most_earlier_object(
-        session=session,
     )
     return donations
 
@@ -65,6 +53,7 @@ async def create_donation(
     session: AsyncSession = Depends(get_async_session),
     user: User = Depends(current_user)
 ):
+    """Любой зарегистрированный пользователь может вносить пожертвования."""
     new_donation = await donation_crud.create(donation, session, user)
     await investing_process(new_donation, CharityProject, session)
     await session.refresh(new_donation)
