@@ -17,6 +17,8 @@ router = APIRouter()
     response_model=list[DonationDB],
     response_model_exclude_none=True,
     dependencies=[Depends(current_superuser)])
+# В условиях задания лишь суперюзер может получить все донаты
+# Обычный пользователь лишь свои
 async def get_all_donations(
     sessions: AsyncSession = Depends(get_async_session)
 ):
